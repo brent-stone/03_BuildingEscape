@@ -1,0 +1,4 @@
+Hold L and double click to insert point light
+Alternatively, Shift+L and single click
+
+Don't forget to set object to movable in the Transform pane of the Details window before attempting to rotate, translate, scale.
