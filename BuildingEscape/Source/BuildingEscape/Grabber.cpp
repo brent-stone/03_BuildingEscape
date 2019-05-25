@@ -43,9 +43,10 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 		OUT PlayerViewPointLocation, 
 		OUT PlayerViewPointRotation);
 
-	UE_LOG(LogTemp, Warning, TEXT("Logcation: %s, Position %s"),
+	// report x, y, z coordinates of actor with this Grabber component.
+	/*UE_LOG(LogTemp, Warning, TEXT("Logcation: %s, Position %s"),
 		*PlayerViewPointLocation.ToString(),
-		*PlayerViewPointRotation.ToString())
+		*PlayerViewPointRotation.ToString())*/
 
 	FVector LineTraceEnd = 
 		PlayerViewPointLocation + PlayerViewPointRotation.Vector() * Reach;
@@ -60,5 +61,25 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 		0.0f,
 		5.0f
 	);
+	FHitResult LineTraceHitResult;
+	// the false decides between simple or complex collision volumes
+	// GetOwner() is what we want to ignore
+	FCollisionQueryParams TraceParams(FName(TEXT("")), false, GetOwner());
+
+	GetWorld()->LineTraceSingleByObjectType(
+		OUT LineTraceHitResult,
+		PlayerViewPointLocation,
+		LineTraceEnd,
+		FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody),
+		TraceParams
+	);
+
+	AActor* ActorHit = LineTraceHitResult.GetActor();
+	if (ActorHit)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Line trace hit: %s"), *ActorHit->GetName());
+	}
+	// FString HitActorName = LineTraceHitResult.GetActor()->GetName();
+
 }
 
