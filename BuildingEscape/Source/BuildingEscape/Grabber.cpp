@@ -6,6 +6,7 @@
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
 #include "GameFramework/PlayerController.h"
+#include "Engine/Classes/Components/PrimitiveComponent.h"
 #include "Math/Vector.h"
 #include "Math/Rotator.h"
 #include "DrawDebugHelpers.h"
@@ -36,22 +37,48 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	FVector PlayerViewPointLocation;
+	FRotator PlayerViewPointRotation;
+	// Note that GetPlayerViewPoint and GetPlayerViewpoint are different
+	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
+		OUT PlayerViewPointLocation,
+		OUT PlayerViewPointRotation);
+
+	FVector LineTraceEnd =
+		PlayerViewPointLocation + PlayerViewPointRotation.Vector() * Reach;
+
 	/// Line trace once
+	if (PhysicsHandle->GrabbedComponent)
+	{
+		PhysicsHandle->SetTargetLocation(LineTraceEnd);
+	}
 
 }
 
 void UGrabber::Grab() {
 	UE_LOG(LogTemp, Warning, TEXT("Grab pressed"));
 	/// Line Trace and see if we reach any actors with physics body collision channel set
-	GetFirstPhysicsBodyInReach();
+	FHitResult HitResult = GetFirstPhysicsBodyInReach();
+	auto ComponentToGrab = HitResult.GetComponent();
+	auto ActorHit = HitResult.GetActor();
 
 	// TODO attach physics handle
-
+	if (ActorHit) // Only try to grab if an actor was hit.
+	{
+		PhysicsHandle->GrabComponentAtLocationWithRotation(
+			ComponentToGrab,
+			NAME_None, // Bone to grab. Not needed since we're using static mesh
+			HitResult.Location,
+			FRotator::ZeroRotator
+		);
+	}
+	
 }
 
 void UGrabber::Release() {
 	UE_LOG(LogTemp, Warning, TEXT("Grab released"));
 	// TODO release physics handle
+	PhysicsHandle->ReleaseComponent();
 }
 
 void UGrabber::FindPhysicsHandleComponent() {
@@ -124,6 +151,6 @@ FHitResult UGrabber::GetFirstPhysicsBodyInReach() const {
 		UE_LOG(LogTemp, Warning, TEXT("Line trace hit: %s"), *ActorHit->GetName());
 	}
 	// FString HitActorName = LineTraceHitResult.GetActor()->GetName();
-	return FHitResult();
+	return LineTraceHitResult;
 }
 
