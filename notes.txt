@@ -1,6 +1,45 @@
+When modifying Unreal generated C++, the last #include must be the *.generated.h
+
 Hold L and double click to insert point light
 Alternatively, Shift+L and single click
 
 Don't forget to set object to movable in the Transform pane of the Details window before attempting to rotate, translate, scale.
 
 Sometimes assets won't automatically have a collision volume. To add one click the asset -> Details windows Static Mesh pane -> Magnifying Glass -> Colission menu in the editor that's opened.
+
+		C++ Pointer		C++ Reference
+		---------------------------------------	---------------------------------------
+What is stored?			Memory Address
+Re-assignable?	Yes			No
+Can be null?	Yes (nullptr)		No
+Access Contents	*ActorPtr			ActorRef
+Access Address	ActorPtr			&ActorRef
+Change Address	ActorPtr = &ActorPtr	Not Allowed
+Change Value	*ActorPtr = Actor		ActorRef = Actor
+
+Context		When Using...
+Example Code	Copy of Actor = *ActorPtr;
+		ActorAddress = &Actor;
+Symbol		*			&
+Syntax		*ActorPtr			&Actor
+					&ActorRef
+Meaning		Contents at ActorPtr		Address of Actor in ActorRef
+
+		When Declaring...
+Context		*			&
+Syntax		Uactor*			UActor&
+Meaning		Pointer to UActor		Reference to UActor
+
+
+How to Reset an Unreal Editor project in case there's a consistent crash
+1. "Check-out" or "Reset" to a working commit
+2. Delete derived folders and files -> .vs, Binaries, Build, Intermediate, Save, top level .sln, top levle .VC.DB
+3. Open unreal editor from .uproject, right click .uproject -> "generate visual studio project files"
+4. Open new .sln file in Visual Studio to re-build the derived folders/files
+
+
+<> for generics
+	Example: PhysicsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
+	Example Explanation: This code is in a component of player's pawn. Go up to owner (the player pawn), then find a sibling component of the UPhysicsHandleComponent class and return it.
+
+nullptr to initialise pointers
