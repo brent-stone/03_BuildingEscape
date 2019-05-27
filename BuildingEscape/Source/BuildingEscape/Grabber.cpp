@@ -37,46 +37,36 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	FVector PlayerViewPointLocation;
-	FRotator PlayerViewPointRotation;
-	// Note that GetPlayerViewPoint and GetPlayerViewpoint are different
-	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
-		OUT PlayerViewPointLocation,
-		OUT PlayerViewPointRotation);
-
-	FVector LineTraceEnd =
-		PlayerViewPointLocation + PlayerViewPointRotation.Vector() * Reach;
-
 	/// Line trace once
 	if (PhysicsHandle->GrabbedComponent)
 	{
-		PhysicsHandle->SetTargetLocation(LineTraceEnd);
+		PhysicsHandle->SetTargetLocation(GetReachLineEnd());
 	}
 
 }
 
 void UGrabber::Grab() {
-	UE_LOG(LogTemp, Warning, TEXT("Grab pressed"));
+	// UE_LOG(LogTemp, Warning, TEXT("Grab pressed"));
 	/// Line Trace and see if we reach any actors with physics body collision channel set
 	FHitResult HitResult = GetFirstPhysicsBodyInReach();
-	auto ComponentToGrab = HitResult.GetComponent();
-	auto ActorHit = HitResult.GetActor();
+	UPrimitiveComponent* ComponentToGrab = HitResult.GetComponent();
+	AActor* ActorHit = HitResult.GetActor();
 
 	// TODO attach physics handle
 	if (ActorHit) // Only try to grab if an actor was hit.
 	{
 		PhysicsHandle->GrabComponentAtLocationWithRotation(
-			ComponentToGrab,
+			ComponentToGrab, // turns out to be the mesh
 			NAME_None, // Bone to grab. Not needed since we're using static mesh
-			HitResult.Location,
-			FRotator::ZeroRotator
+			HitResult.Location, // location to put grabbed object
+			FRotator::ZeroRotator // handles rotation of grabbed actor
 		);
 	}
 	
 }
 
 void UGrabber::Release() {
-	UE_LOG(LogTemp, Warning, TEXT("Grab released"));
+	// UE_LOG(LogTemp, Warning, TEXT("Grab released"));
 	// TODO release physics handle
 	PhysicsHandle->ReleaseComponent();
 }
@@ -84,7 +74,7 @@ void UGrabber::Release() {
 void UGrabber::FindPhysicsHandleComponent() {
 	/// Look for attached Physics Handle
 	PhysicsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
-	if (!PhysicsHandle)
+	if (PhysicsHandle == nullptr)
 	{
 		UE_LOG(LogTemp, Error, TEXT("No Physics Handle found for %s"), *(GetOwner()->GetName()));
 	}
@@ -93,7 +83,7 @@ void UGrabber::FindPhysicsHandleComponent() {
 void UGrabber::SetupInputComponent() {
 	/// Look for attached Input Component
 	InputComponent = GetOwner()->FindComponentByClass<UInputComponent>();
-	if (!InputComponent)
+	if (InputComponent == nullptr)
 	{
 		UE_LOG(LogTemp, Error, TEXT("No Input Component found for %s"), *(GetOwner()->GetName()));
 	}
@@ -106,6 +96,41 @@ void UGrabber::SetupInputComponent() {
 }
 
 FHitResult UGrabber::GetFirstPhysicsBodyInReach() const {
+	/// Line-trace (AKA ray-cast) out to reach distance
+	FHitResult LineTraceHitResult;
+	// the false decides between simple or complex collision volumes
+	// GetOwner() is the AActor we want this method to ignore
+	FCollisionQueryParams TraceParams(FName(TEXT("")), false, GetOwner());
+
+	GetWorld()->LineTraceSingleByObjectType(
+		OUT LineTraceHitResult,
+		GetReachLineStart(),
+		GetReachLineEnd(),
+		FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody),
+		TraceParams
+	);
+
+	/*AActor* ActorHit = LineTraceHitResult.GetActor();
+	if (ActorHit)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Line trace hit: %s"), *ActorHit->GetName());
+	}
+	FString HitActorName = LineTraceHitResult.GetActor()->GetName();*/
+	return LineTraceHitResult;
+}
+
+FVector UGrabber::GetReachLineStart() const {
+	FVector PlayerViewPointLocation;
+	FRotator PlayerViewPointRotation;
+	// Note that GetPlayerViewPoint and GetPlayerViewpoint are different
+	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
+		OUT PlayerViewPointLocation,
+		OUT PlayerViewPointRotation);
+
+	return PlayerViewPointLocation;
+}
+
+FVector UGrabber::GetReachLineEnd() const {
 	FVector PlayerViewPointLocation;
 	FRotator PlayerViewPointRotation;
 	// Note that GetPlayerViewPoint and GetPlayerViewpoint are different
@@ -118,39 +143,13 @@ FHitResult UGrabber::GetFirstPhysicsBodyInReach() const {
 		*PlayerViewPointLocation.ToString(),
 		*PlayerViewPointRotation.ToString())*/
 
-	FVector LineTraceEnd =
-		PlayerViewPointLocation + PlayerViewPointRotation.Vector() * Reach;
+	FVector LineTraceEnd = PlayerViewPointLocation + PlayerViewPointRotation.Vector() * Reach;
 
 	/*DrawDebugLine(
-		GetWorld(),
-		PlayerViewPointLocation,
-		LineTraceEnd,
-		FColor(255, 0, 0),
-		false,
-		0.0f,
-		0.0f,
-		5.0f
+		GetWorld(), PlayerViewPointLocation, LineTraceEnd, FColor(255, 0, 0),
+		false, 0.0f, 0.0f, 5.0f
 	);*/
 
-	FHitResult LineTraceHitResult;
-	// the false decides between simple or complex collision volumes
-	// GetOwner() is what we want to ignore
-	FCollisionQueryParams TraceParams(FName(TEXT("")), false, GetOwner());
-
-	GetWorld()->LineTraceSingleByObjectType(
-		OUT LineTraceHitResult,
-		PlayerViewPointLocation,
-		LineTraceEnd,
-		FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody),
-		TraceParams
-	);
-
-	AActor* ActorHit = LineTraceHitResult.GetActor();
-	if (ActorHit)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Line trace hit: %s"), *ActorHit->GetName());
-	}
-	// FString HitActorName = LineTraceHitResult.GetActor()->GetName();
-	return LineTraceHitResult;
+	return LineTraceEnd;
 }
 
