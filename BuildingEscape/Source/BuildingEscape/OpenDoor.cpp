@@ -13,8 +13,6 @@ UOpenDoor::UOpenDoor()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-
-	// ...
 }
 
 
@@ -27,19 +25,16 @@ void UOpenDoor::BeginPlay()
 	
 }
 
-void UOpenDoor::OpenDoor()
-{
-	// Old code which was used prior to hooking a Blueprint. Insta-Opens door to 90 degrees.
-	//Owner->SetActorRotation(FRotator(0.0f, OpenAngle, 0.0f));
+// Old code which was used prior to hooking a Blueprint. Insta-Opens/Closes door to 90 degrees.
+//void UOpenDoor::OpenDoor()
+//{
+//	Owner->SetActorRotation(FRotator(0.0f, OpenAngle, 0.0f));
+//}
 
-	// This is necessary to hook in a Blueprint. Events must be broadcast.
-	OnOpenRequest.Broadcast();
-}
-
-void UOpenDoor::CloseDoor()
-{
-	Owner->SetActorRotation(FRotator(0.0f, 0.0f, 0.0f));
-}
+//void UOpenDoor::CloseDoor()
+//{
+//	Owner->SetActorRotation(FRotator(0.0f, 0.0f, 0.0f));
+//}
 
 
 // Called every frame
@@ -50,16 +45,23 @@ void UOpenDoor::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompon
 	// Poll the Trigger Volume
 	// Some older code left as an example
 	// if (PressurePlate->IsOverlappingActor(ActorThatOpens))
-	if (GetTotalWeightOfActorsOnPlate() > 30.0f) // TODO lower limit into a parameter
+	if (GetTotalWeightOfActorsOnPlate() > TriggerMass) // TODO lower limit into a parameter
 	{
-		OpenDoor();
-		LastDoorOpenTime = GetWorld()->GetTimeSeconds();
+		OnOpen.Broadcast();
+		// Old code from when door open/close was controlled just by C++
+		// OpenDoor();
+		// LastDoorOpenTime = GetWorld()->GetTimeSeconds();
+	}
+	else
+	{
+		OnClose.Broadcast();
 	}
 
-	if (GetWorld()->GetTimeSeconds() - LastDoorOpenTime >= DoorCloseDelay)
+	// Old code from when door open/close was controlled just by C++
+	/*if (GetWorld()->GetTimeSeconds() - LastDoorOpenTime >= DoorCloseDelay)
 	{
 		CloseDoor();
-	}
+	}*/
 	
 }
 

@@ -13,7 +13,7 @@
 
 // This UE MACRO makes it possible to hook a value to a Blueprint
 // It makes a class hookable by BluePrints called what is passed as an argument
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnOpenRequest);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDoorEvent);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BUILDINGESCAPE_API UOpenDoor : public UActorComponent
@@ -28,7 +28,8 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-	void OpenDoor();
+	// Old code from when door open/close was controlled just by C++ 
+	// void OpenDoor();
 
 	void CloseDoor();
 
@@ -40,26 +41,33 @@ public:
 	// Since the class FOnOpenRequest was created using the macro above...
 	// We now instantiate an instance of that class... now look at OpenDoor in .cpp
 	UPROPERTY(BlueprintAssignable)
-	FOnOpenRequest OnOpenRequest;
+	FDoorEvent OnOpen;
+
+	UPROPERTY(BlueprintAssignable)
+	FDoorEvent OnClose;
 
 private:
 	AActor* Owner = GetOwner();
 
 	UPROPERTY(EditAnywhere)
-	float OpenAngle = 90.0f;
-
-	UPROPERTY(EditAnywhere)
 	ATriggerVolume* PressurePlate = nullptr; // nullptr > undefined
-
-	UPROPERTY(EditAnywhere)
-	float DoorCloseDelay = 1.0f;
-
-	float LastDoorOpenTime;
-
-	// Some older code left as an example
-	// AActor* ActorThatOpens; // APawn inherits from AActor
 
 	// Returns total mass in kg
 	float GetTotalWeightOfActorsOnPlate() const;
+
+	UPROPERTY(EditAnywhere)
+	float TriggerMass = 30.0f;
+
+	// Old code from when door open/close was controlled just by C++
+	// UPROPERTY(EditAnywhere)
+	// float OpenAngle = 90.0f;
+
+	// UPROPERTY(EditAnywhere)
+	// float DoorCloseDelay = 1.0f;
+
+	// float LastDoorOpenTime;
+
+	// Some even older code left as an example
+	// AActor* ActorThatOpens; // APawn inherits from AActor
 
 };
