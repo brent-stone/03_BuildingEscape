@@ -29,7 +29,11 @@ void UOpenDoor::BeginPlay()
 
 void UOpenDoor::OpenDoor()
 {
-	Owner->SetActorRotation(FRotator(0.0f, OpenAngle, 0.0f));
+	// Old code which was used prior to hooking a Blueprint. Insta-Opens door to 90 degrees.
+	//Owner->SetActorRotation(FRotator(0.0f, OpenAngle, 0.0f));
+
+	// This is necessary to hook in a Blueprint. Events must be broadcast.
+	OnOpenRequest.Broadcast();
 }
 
 void UOpenDoor::CloseDoor()
