@@ -38,6 +38,7 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	/// Line trace once
+	if (!PhysicsHandle) { return; } // Error avoiding code
 	if (PhysicsHandle->GrabbedComponent)
 	{
 		PhysicsHandle->SetTargetLocation(GetReachLineEnd());
@@ -55,6 +56,7 @@ void UGrabber::Grab() {
 	// TODO attach physics handle
 	if (ActorHit) // Only try to grab if an actor was hit.
 	{
+		if (!PhysicsHandle) { return; } // Error avoiding code
 		PhysicsHandle->GrabComponentAtLocationWithRotation(
 			ComponentToGrab, // turns out to be the mesh
 			NAME_None, // Bone to grab. Not needed since we're using static mesh
@@ -68,6 +70,7 @@ void UGrabber::Grab() {
 void UGrabber::Release() {
 	// UE_LOG(LogTemp, Warning, TEXT("Grab released"));
 	// TODO release physics handle
+	if (!PhysicsHandle) { return; } // Error avoiding code
 	PhysicsHandle->ReleaseComponent();
 }
 
@@ -76,7 +79,7 @@ void UGrabber::FindPhysicsHandleComponent() {
 	PhysicsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
 	if (PhysicsHandle == nullptr)
 	{
-		UE_LOG(LogTemp, Error, TEXT("No Physics Handle found for %s"), *(GetOwner()->GetName()));
+		UE_LOG(LogTemp, Error, TEXT("No Physics Handle found for %s"), *GetOwner()->GetName());
 	}
 }
 

@@ -1,4 +1,5 @@
 When modifying Unreal generated C++, the last #include must be the *.generated.h
+When modifying Unreal .cpp generated classes, make sure the associated .h is the FIRST #include
 
 Hold L and double click to insert point light
 Alternatively, Shift+L and single click
@@ -45,3 +46,7 @@ How to Reset an Unreal Editor project in case there's a consistent crash
 nullptr to initialise pointers
 
 To add physics to a pawn open the pawn BluePrint -> CollisionComponent component -> Physics Pane inside details and click "simulate physics" -> give a Mass in Kg -> Collision Pane click "Simulation Generates" -> "Simulation Generates Hit Events" && "Generate Overlap Events" radio buttons are checked
+
+Wrapping up dereferences matters. Notice the brackets around GetOwner()->GetName() results in the dereference not working as intended
+Works: UE_LOG(LogTemp, Error, TEXT("No Physics Handle found for %s"), *GetOwner()->GetName());
+Doesn't: UE_LOG(LogTemp, Error, TEXT("No Physics Handle found for %s"), *(GetOwner()->GetName()));
