@@ -49,6 +49,10 @@ private:
 
 	float LastDoorOpenTime;
 
-	AActor* ActorThatOpens; // APawn inherits from AActor
+	// Some older code left as an example
+	// AActor* ActorThatOpens; // APawn inherits from AActor
+
+	// Returns total mass in kg
+	float GetTotalWeightOfActorsOnPlate() const;
 
 };

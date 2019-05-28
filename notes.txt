@@ -43,3 +43,5 @@ How to Reset an Unreal Editor project in case there's a consistent crash
 	Example Explanation: This code is in a component of player's pawn. Go up to owner (the player pawn), then find a sibling component of the UPhysicsHandleComponent class and return it.
 
 nullptr to initialise pointers
+
+To add physics to a pawn open the pawn BluePrint -> CollisionComponent component -> Physics Pane inside details and click "simulate physics" -> give a Mass in Kg -> Collision Pane click "Simulation Generates" -> "Simulation Generates Hit Events" && "Generate Overlap Events" radio buttons are checked
